@@ -1,8 +1,9 @@
-function createMessage(name, message) {
+function createMessage(name, message, admin) {
   return {
-    name,
+    admin,
+    date: new Date().getTime(),
+    from: name,
     message,
-    date: new Date().getTime()
   };
 }
 

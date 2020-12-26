@@ -12,10 +12,7 @@ io.on('connection', client => {
 
     let { room, name } = userController.removeUser(client.id);
 
-    client.broadcast.to(room).emit('message', {
-      from: 'Admin',
-      message: `${name} has left the chat room`,
-    });
+    client.broadcast.to(room).emit('message', createMessage('Admin', `${name} has left the chat room`, true));
 
     client.broadcast.to(room).emit('userList', userController.getUsersByRoom(room));
   });
@@ -23,23 +20,25 @@ io.on('connection', client => {
   client.on('enterChat', ({ name, room }) => {
     userController.addUser(client.id, name, room);
 
-    client.broadcast.to(room).emit('message' ,{
-      from: 'Admin',
-      message: `${ name } joined ${ room } room`,
-    });
+    client.broadcast.to(room).emit('message', createMessage('Admin', `${ name } joined ${ room } room`, true));
 
+    client.emit('userList', userController.getUsersByRoom(room));
     client.broadcast.to(room).emit('userList', userController.getUsersByRoom(room));
 
     client.join(room);
   });
 
-  client.on('message', message => {
+  client.on('message', (message, cb) => {
     let { room, name } = userController.getByID(client.id);
-    client.broadcast.to(room).emit('message', createMessage(name  , message));
+    let formattedMessage = createMessage(name, message);
+
+    client.broadcast.to(room).emit('message', formattedMessage);
+
+    cb(formattedMessage);
   });
 
-  client.on('privateMessage', ({ message }) => {
+  client.on('privateMessage', ({ message, to }) => {
     let user = userController.getByID(client.id);
-    client.broadcast.to(client.id).emit('privateMessage', createMessage(user.name, message));
+    client.broadcast.to(to).emit('privateMessage', createMessage(user.name, message));
   });
 });

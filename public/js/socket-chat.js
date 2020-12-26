@@ -13,13 +13,21 @@ socket.on('connect', () => {
     throw new Error('Name/Room required');
   }
 
+  $('#room-name').html(room);
   socket.emit('enterChat', { name, room });
 });
 
 socket.on('disconnect', () => console.log('Connection lost'));
 
-socket.on('message', message => console.log(message));
+socket.on('message', message => {
+  console.log(message);
+  renderMessage(message, false);
+  scrollBottom();
+});
 
-socket.on('userList', data => console.log('Connected users', data));
+socket.on('userList', data => {
+  console.log('Connected users', data);
+  renderUsers(data);
+});
 
 socket.on('privateMessage', data => console.log(`Private message from ${data.name}:`, data.message));
